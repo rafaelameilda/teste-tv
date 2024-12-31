@@ -1,39 +1,78 @@
 <template>
   <div class="q-pa-md">
     <q-carousel
-      thumbnails
-      swipeable
       animated
       v-model="slide"
-      v-model:fullscreen="fullscreen"
       infinite
-      :autoplay="5000"
+      :fullscreen="fullscreen"
+      ref="carousel"
+      :autoplay="autoplay"
+      class="bg-purple text-white rounded-borders"
     >
       <q-carousel-slide
-        :name="1"
-        img-src="https://cdn.quasar.dev/img/mountains.jpg"
-      />
-      <q-carousel-slide
-        :name="2"
-        img-src="https://cdn.quasar.dev/img/parallax1.jpg"
-      />
-      <q-carousel-slide
-        :name="3"
-        img-src="https://cdn.quasar.dev/img/parallax2.jpg"
-      />
-      <q-carousel-slide
-        :name="4"
-        img-src="https://cdn.quasar.dev/img/quasar.jpg"
-      />
+        v-for="(item, index) in items"
+        :key="index"
+        :name="index + 1"
+      >
+        <q-img
+          :src="item.link"
+          fit="contain"
+          style="max-width: 100%; height: 100%"
+        >
+          <template v-slot:loading>
+            <q-spinner-gears color="white" />
+          </template>
+        </q-img>
+      </q-carousel-slide>
 
       <template v-slot:control>
-        <q-carousel-control position="bottom-right" :offset="[18, 18]">
+        <q-carousel-control
+          position="top-right"
+          :offset="[18, 18]"
+          class="text-white rounded-borders"
+          style="background: rgba(0, 0, 0, 0.3); padding: 4px 8px"
+        >
+          <q-toggle
+            dense
+            dark
+            color="orange"
+            v-model="autoplay"
+            label="Auto Play"
+          />
+        </q-carousel-control>
+
+        <q-carousel-control
+          position="bottom-right"
+          :offset="[40, 18]"
+          class="q-gutter-xs"
+        >
           <q-btn
             push
             round
             dense
-            color="white"
-            text-color="primary"
+            color="orange"
+            text-color="white"
+            icon="arrow_left"
+            @click="$refs.carousel.previous()"
+          />
+          <q-btn
+            push
+            round
+            dense
+            color="orange"
+            text-color="white"
+            icon="arrow_right"
+            @click="$refs.carousel.next()"
+          />
+        </q-carousel-control>
+
+        <q-carousel-control position="bottom-right" :offset="[3, 18]">
+          <q-btn
+            push
+            round
+            dense
+            color="orange"
+            text-color="white"
             :icon="fullscreen ? 'fullscreen_exit' : 'fullscreen'"
             @click="fullscreen = !fullscreen"
           />
@@ -42,16 +81,45 @@
     </q-carousel>
   </div>
 </template>
-
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 export default {
   setup() {
+    const items = ref([]);
+
+    const fetchItems = async () => {
+      items.value = [
+        {
+          type: "img",
+          time: 4000,
+          link: "/images/img1.jpeg",
+        },
+        {
+          type: "img",
+          time: 4000,
+          link: "/images/img2.jpeg",
+        },
+        {
+          type: "img",
+          time: 4000,
+          link: "/images/img3.jpeg",
+        },
+      ];
+    };
+
+    onMounted(async () => {
+      await fetchItems();
+    });
+
     return {
-      slide: ref(1),
       fullscreen: ref(false),
+      slide: ref(1),
+      items,
+      autoplay: ref(false),
     };
   },
 };
 </script>
+
+<style scoped></style>
