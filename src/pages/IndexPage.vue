@@ -7,22 +7,26 @@
       :fullscreen="fullscreen"
       ref="carousel"
       :autoplay="autoplay"
-      class="bg-purple text-white rounded-borders"
+      class="text-white rounded-borders"
     >
       <q-carousel-slide
-        v-for="(item, index) in items"
+        v-for="(pair, index) in groupedItems"
         :key="index"
         :name="index + 1"
       >
-        <q-img
-          :src="item.link"
-          fit="contain"
-          style="max-width: 100%; height: 100%"
-        >
-          <template v-slot:loading>
-            <q-spinner-gears color="white" />
-          </template>
-        </q-img>
+        <div class="row justify-around items-center">
+          <q-img
+            v-for="(item, idx) in pair"
+            :key="idx"
+            :src="item.link"
+            fit="contain"
+            style="max-width: 45%; height: auto"
+          >
+            <template v-slot:loading>
+              <q-spinner-gears color="white" />
+            </template>
+          </q-img>
+        </div>
       </q-carousel-slide>
 
       <template v-slot:control>
@@ -81,8 +85,9 @@
     </q-carousel>
   </div>
 </template>
+
 <script>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 
 export default {
   setup() {
@@ -90,23 +95,25 @@ export default {
 
     const fetchItems = async () => {
       items.value = [
-        {
-          type: "img",
-          time: 4000,
-          link: "/images/img1.jpeg",
-        },
-        {
-          type: "img",
-          time: 4000,
-          link: "/images/img2.jpeg",
-        },
-        {
-          type: "img",
-          time: 4000,
-          link: "/images/img3.jpeg",
-        },
+        { type: "img", time: 4000, link: "/images/teste1.jpeg" },
+        { type: "img", time: 4000, link: "/images/teste2.jpeg" },
+        { type: "img", time: 4000, link: "/images/teste3.jpeg" },
+        { type: "img", time: 4000, link: "/images/teste4.jpeg" },
+        { type: "img", time: 4000, link: "/images/teste5.jpeg" },
+        { type: "img", time: 4000, link: "/images/teste6.jpeg" },
+        { type: "img", time: 4000, link: "/images/teste7.jpeg" },
+        { type: "img", time: 4000, link: "/images/teste8.jpeg" },
       ];
     };
+
+    // Group items into pairs
+    const groupedItems = computed(() => {
+      const pairs = [];
+      for (let i = 0; i < items.value.length; i += 2) {
+        pairs.push(items.value.slice(i, i + 2));
+      }
+      return pairs;
+    });
 
     onMounted(async () => {
       await fetchItems();
@@ -116,6 +123,7 @@ export default {
       fullscreen: ref(false),
       slide: ref(1),
       items,
+      groupedItems,
       autoplay: ref(false),
     };
   },
