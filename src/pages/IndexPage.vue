@@ -1,33 +1,35 @@
 <template>
-  <div class="q-pa-md">
-    <q-carousel
-      animated
-      v-model="slide"
-      infinite
-      autoplay
-      style="width: 100%; height: 100%"
-      transition-prev="jump-right"
-      transition-next="jump-left"
-      arrows
-      control-color="yellow"
-    >
-      <q-carousel-slide
-        v-for="(pair, index) in groupedItems"
-        :key="index"
-        :name="index + 1"
+  <div class="flex flex-center items-center flex-column" style="height: 100vh">
+    <div class="carousel-container">
+      <q-carousel
+        class="custom-carousel"
+        animated
+        v-model="slide"
+        infinite
+        autoplay
+        transition-prev="jump-right"
+        transition-next="jump-left"
+        arrows
+        control-color="yellow"
       >
-        <div class="flex row justify-between">
-          <q-img
-            v-for="(item, idx) in pair"
-            :key="idx"
-            :src="item.link"
-            fit="contain"
-            style="max-width: 45%; height: auto"
-          >
-          </q-img>
-        </div>
-      </q-carousel-slide>
-    </q-carousel>
+        <q-carousel-slide
+          v-for="(pair, index) in groupedItems"
+          :key="index"
+          :name="index + 1"
+        >
+          <div class="flex row justify-between">
+            <q-img
+              v-for="(item, idx) in pair"
+              :key="idx"
+              :src="item.link"
+              fit="contain"
+              style="max-width: 45%; height: auto"
+            >
+            </q-img>
+          </div>
+        </q-carousel-slide>
+      </q-carousel>
+    </div>
   </div>
 </template>
 
@@ -72,4 +74,17 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.carousel-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.custom-carousel {
+  width: 100%;
+  height: 100%;
+}
+</style>
