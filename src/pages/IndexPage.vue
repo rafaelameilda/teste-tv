@@ -3,29 +3,33 @@
     <div class="carousel-container">
       <q-carousel
         class="custom-carousel"
+        v-model="currentSlide"
         animated
-        v-model="slide"
         infinite
-        autoplay
-        transition-prev="jump-right"
-        transition-next="jump-left"
-        arrows
-        control-color="yellow"
       >
         <q-carousel-slide
-          v-for="(pair, index) in groupedItems"
+          v-for="(item, index) in items"
           :key="index"
           :name="index + 1"
         >
-          <div class="flex row justify-between">
-            <q-img
-              v-for="(item, idx) in pair"
-              :key="idx"
+          <q-img
+            v-if="item.type === 'img'"
+            :key="item"
+            :src="item.link"
+            fit="contain"
+          >
+          </q-img>
+
+          <div v-else-if="item.type === 'video'" class="video-container">
+            <video
               :src="item.link"
-              fit="contain"
-              style="max-width: 45%; height: auto"
-            >
-            </q-img>
+              autoplay
+              muted
+              loop
+              controls
+              style="width: 100%; height: auto"
+              @loadeddata="startAutoplay"
+            ></video>
           </div>
         </q-carousel-slide>
       </q-carousel>
@@ -34,41 +38,45 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 
 export default {
   setup() {
     const items = ref([]);
+    const currentSlide = ref(1);
+    const timer = ref(null);
 
     const fetchItems = async () => {
       items.value = [
-        { type: "img", time: 4000, link: "/images/teste1.jpeg" },
-        { type: "img", time: 4000, link: "/images/teste2.jpeg" },
-        { type: "img", time: 4000, link: "/images/teste3.jpeg" },
-        { type: "img", time: 4000, link: "/images/teste4.jpeg" },
-        { type: "img", time: 4000, link: "/images/teste5.jpeg" },
-        { type: "img", time: 4000, link: "/images/teste6.jpeg" },
-        { type: "img", time: 4000, link: "/images/teste7.jpeg" },
-        { type: "img", time: 4000, link: "/images/teste8.jpeg" },
+        { type: "img", time: 4000, link: "/images/segtec.jpeg" },
+        {
+          type: "video",
+          time: 26000,
+          link: "/videos/video 1.mp4",
+        },
       ];
     };
 
-    const groupedItems = computed(() => {
-      const pairs = [];
-      for (let i = 0; i < items.value.length; i += 2) {
-        pairs.push(items.value.slice(i, i + 2));
-      }
-      return pairs;
-    });
+    const startAutoplay = () => {
+      clearTimeout(timer.value);
+      const currentItem = items.value[currentSlide.value - 1];
+
+      timer.value = setTimeout(() => {
+        currentSlide.value =
+          currentSlide.value < items.value.length ? currentSlide.value + 1 : 1;
+      }, currentItem.time);
+    };
 
     onMounted(async () => {
       await fetchItems();
+      startAutoplay();
     });
 
+    watch(currentSlide, startAutoplay);
+
     return {
-      slide: ref(1),
+      currentSlide,
       items,
-      groupedItems,
     };
   },
 };
@@ -86,6 +94,13 @@ export default {
 .custom-carousel {
   width: 100%;
   height: 100%;
-  display: none;
+}
+
+.video-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
 }
 </style>
