@@ -1,106 +1,79 @@
 <template>
-  <div class="flex flex-center items-center flex-column" style="height: 100vh">
-    <div class="carousel-container">
-      <q-carousel
-        class="custom-carousel"
-        v-model="currentSlide"
-        animated
-        infinite
+  <q-page class="q-pa-none bg-black">
+    <q-carousel
+      v-model="currentSlide"
+      :infinite="true"
+      transition-prev="slide-right"
+      transition-next="slide-left"
+      class="full-screen"
+    >
+      <q-carousel-slide
+        v-for="(media, index) in playlist"
+        :key="index"
+        :name="index"
+        class="full-screen"
       >
-        <q-carousel-slide
-          v-for="(item, index) in items"
-          :key="index"
-          :name="index + 1"
-        >
-          <q-img
-            v-if="item.type === 'img'"
-            :key="item"
-            :src="item.link"
-            fit="contain"
-          >
-          </q-img>
-
-          <div v-else-if="item.type === 'video'" class="video-container">
-            <video
-              :src="item.link"
-              autoplay
-              muted
-              loop
-              controls
-              style="width: 100%; height: auto"
-              @loadeddata="startAutoplay"
-            ></video>
-          </div>
-        </q-carousel-slide>
-      </q-carousel>
-    </div>
-  </div>
+        <img
+          v-if="media.type === 'image'"
+          :src="media.url"
+          alt="Mídia"
+          class="full-screen"
+        />
+        <video
+          v-if="media.type === 'video'"
+          :src="media.url"
+          autoplay
+          loop
+          muted
+          class="full-screen"
+          v-on:ended="funcaoVideoFim"
+        ></video>
+      </q-carousel-slide>
+    </q-carousel>
+  </q-page>
 </template>
 
 <script>
-import { ref, watch, onMounted } from "vue";
-
 export default {
-  setup() {
-    const items = ref([]);
-    const currentSlide = ref(1);
-    const timer = ref(null);
-
-    const fetchItems = async () => {
-      items.value = [
-        { type: "img", time: 4000, link: "/images/segtec.jpeg" },
+  data() {
+    return {
+      currentSlide: 0,
+      playlist: [
         {
           type: "video",
           time: 26000,
-          link: "/videos/video 1.mp4",
+          url: "/videos/video 1.mp4",
         },
-      ];
+        { type: "image", time: 4000, url: "/images/segtec.jpeg" },
+      ],
     };
+  },
+  mounted() {
+    // setInterval(() => {
+    //   this.nextSlide();
+    // }, 3000);
+  },
 
-    const startAutoplay = () => {
-      clearTimeout(timer.value);
-      const currentItem = items.value[currentSlide.value - 1];
+  methods: {
+    nextSlide() {
+      this.currentSlide = (this.currentSlide + 1) % this.playlist.length;
+    },
 
-      timer.value = setTimeout(() => {
-        currentSlide.value =
-          currentSlide.value < items.value.length ? currentSlide.value + 1 : 1;
-      }, currentItem.time);
-    };
-
-    onMounted(async () => {
-      await fetchItems();
-      startAutoplay();
-    });
-
-    watch(currentSlide, startAutoplay);
-
-    return {
-      currentSlide,
-      items,
-    };
+    funcaoVideoFim(dados) {
+      console.log(dados);
+    },
   },
 };
 </script>
 
-<style scoped>
-.carousel-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-.custom-carousel {
-  width: 100%;
-  height: 100%;
-}
-
-.video-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
+<style>
+.full-screen {
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 </style>
