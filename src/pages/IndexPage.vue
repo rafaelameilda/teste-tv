@@ -1,118 +1,93 @@
 <template>
-  <q-page class="q-pa-none bg-black">
-    <q-carousel
-      v-model="currentSlide"
-      transition-prev="slide-right"
-      transition-next="slide-left"
-      class="full-screen"
-      @slide="onSlideChange"
-      arrows
-      infinite
-    >
-      <q-carousel-slide
-        v-for="(media, index) in playlist"
+  <q-page
+    class="flex flex-center q-pa-md"
+    :class="{ 'overlay-active': showOverlay }"
+  >
+    <div class="row justify-center q-gutter-x-lg q-gutter-y-lg">
+      <q-card
+        v-for="(card, index) in cards"
         :key="index"
-        :name="index"
-        class="full-screen"
+        :bordered="true"
+        :class="['card-container', card.bgClass, 'text-white']"
+        @mouseenter="showOverlay = true"
+        @mouseleave="showOverlay = false"
+        @click="goToRoute(card.path)"
       >
-        <img
-          v-if="media.type === 'image'"
-          :src="media.url"
-          alt="Mídia"
-          class="full-screen"
-        />
-        <video
-          v-if="media.type === 'video'"
-          :src="media.url"
-          autoplay
-          muted
-          class="full-screen"
-          @ended="funcaoVideoFim"
-        ></video>
-      </q-carousel-slide>
-    </q-carousel>
+        <q-card-section>
+          <div class="text-h5 text-center">
+            <q-icon :name="card.icon" size="5rem" class="icon-hover" />
+          </div>
+          <div class="text-h5 text-center q-mt-md">{{ card.title }}</div>
+        </q-card-section>
+      </q-card>
+    </div>
   </q-page>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      currentSlide: 0,
-      playlist: [
-        { type: "image", time: 2000, url: "/images/segtec.jpeg" },
-        { type: "video", url: "/videos/video 1.mp4" },
-        { type: "image", time: 2000, url: "/images/segtec.jpeg" },
-      ],
-      slideTimeout: null,
-    };
+<script setup>
+import { useRouter } from "vue-router";
+import { ref } from "vue";
+
+const showOverlay = ref(false);
+
+const cards = [
+  {
+    title: "Cadastro de Mídias",
+    icon: "collections",
+    bgClass: "bg-light-blue",
+    path: "register/midia",
   },
-  mounted() {
-    this.startSlideTimer(); // Inicia o temporizador no primeiro slide
-    this.prefetchNextMedia(); // Pré-carrega a próxima mídia
+  {
+    title: "Cadastro de Playlist",
+    icon: "playlist_play",
+    bgClass: "bg-blue-grey",
   },
-  methods: {
-    onSlideChange(newIndex) {
-      clearTimeout(this.slideTimeout); // Limpa qualquer timeout anterior
-      this.currentSlide = newIndex;
-      this.startSlideTimer(); // Reinicia o temporizador ao mudar o slide
-      this.prefetchNextMedia(); // Pré-carrega a próxima mídia
-    },
-
-    startSlideTimer() {
-      clearTimeout(this.slideTimeout); // Limpa qualquer timeout anterior
-
-      const currentMedia = this.playlist[this.currentSlide];
-
-      if (currentMedia.type === "image") {
-        // Se estamos no último slide, reiniciar o ciclo após o tempo
-        this.slideTimeout = setTimeout(() => {
-          this.nextSlide(); // Chama o nextSlide para trocar o slide
-        }, currentMedia.time);
-      }
-      // Se for vídeo, a troca será controlada pelo evento @ended
-    },
-
-    nextSlide() {
-      // O módulo de índice garante que a playlist sempre reinicie após o último slide
-      this.currentSlide = (this.currentSlide + 1) % this.playlist.length;
-
-      // Reinicia o temporizador após trocar o slide
-      this.startSlideTimer(); // Chama o startSlideTimer para configurar o tempo do novo slide
-
-      // Pré-carregar a próxima mídia
-      this.prefetchNextMedia();
-    },
-
-    funcaoVideoFim(dados) {
-      this.nextSlide();
-    },
-
-    prefetchNextMedia() {
-      const nextIndex = (this.currentSlide + 1) % this.playlist.length;
-      const nextMedia = this.playlist[nextIndex];
-
-      if (nextMedia.type === "image") {
-        const img = new Image();
-        img.src = nextMedia.url;
-      } else if (nextMedia.type === "video") {
-        const video = document.createElement("video");
-        video.src = nextMedia.url;
-        video.preload = "auto";
-      }
-    },
+  {
+    title: "Cadastro de TVs",
+    icon: "tv",
+    bgClass: "bg-light-green",
   },
-};
+];
+
+const router = useRouter();
+const goToRoute = (path) => router.push(path);
 </script>
 
-<style>
-.full-screen {
-  width: 100vw;
-  height: 100vh;
-  object-fit: contain;
-  background: transparent;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+<style scoped>
+.q-page {
+  position: relative;
+  transition: background-color 0.5s ease;
+}
+
+.q-page.overlay-active {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.card-container {
+  position: relative;
+  width: 30rem;
+  min-height: 30rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  transition: transform 0.5s, box-shadow 0.5s;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.card-container:hover {
+  transform: translateY(-8px) scale(1.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.icon-hover {
+  transition: color 0.5s, transform 0.5s;
+}
+
+.card-container:hover .icon-hover {
+  color: #ffeb3b;
+  transform: scale(1.1);
 }
 </style>
