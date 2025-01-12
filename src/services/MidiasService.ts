@@ -13,6 +13,14 @@ class MidiaService {
 
     return data;
   }
+
+  async createMidia(params) {
+    await this.repository.post('midia/create', params);
+  }
+
+  async deleteMidia(id) {
+    await this.repository.delete(`midia/delete/${id}`);
+  }
 }
 
 export { MidiaService };

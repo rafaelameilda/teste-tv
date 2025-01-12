@@ -41,6 +41,7 @@ const cards = [
     title: 'Cadastro de Playlist',
     icon: 'playlist_play',
     bgClass: 'bg-blue-grey',
+    path: 'register/playlist',
   },
   {
     title: 'Cadastro de TVs',

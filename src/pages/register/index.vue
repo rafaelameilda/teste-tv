@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-pa-sm items-start q-gutter-sm">
-    <q-toolbar class="bg-light-blue text-white">
+    <q-toolbar :class="toolbarColor" class="text-white">
       <q-toolbar-title class="text-subtitle1">
         {{ getPageTitle }}
       </q-toolbar-title>
@@ -10,15 +10,19 @@
 </template>
 
 <script lang="ts">
-import { useRoute } from "vue-router";
-import { computed } from "vue";
+import { useRoute } from 'vue-router';
+import { computed } from 'vue';
 
 export default {
-  name: "IndexRegister",
+  name: 'IndexRegister',
   setup() {
     const $route = useRoute();
 
-    return { getPageTitle: computed(() => $route.meta.title) };
+    return {
+      getPageTitle: computed(() => $route.meta.title),
+
+      toolbarColor: computed(() => $route.meta.color),
+    };
   },
 };
 </script>
