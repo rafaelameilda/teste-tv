@@ -1,9 +1,9 @@
 {
-  "name": "quasar-project",
+  "name": "crud-tv",
   "version": "0.0.1",
-  "description": "A Quasar Project",
-  "productName": "Quasar App",
-  "author": "rafael almeida <rafaelalmeidalara007@gmail.com>",
+  "description": "Projeto para gerenciar mídias de TV de recepção",
+  "productName": "CRUD TV",
+  "author": "Rafael almeida <rafaelalmeidalara007@gmail.com>",
   "type": "module",
   "private": true,
   "scripts": {
@@ -13,17 +13,27 @@
     "postinstall": "quasar prepare"
   },
   "dependencies": {
-    "axios": "^1.2.1",
-    "pinia": "^2.0.11",
     "@quasar/extras": "^1.16.4",
+    "axios": "^1.2.1",
+    "luxon": "^3.5.0",
+    "pinia": "^2.0.11",
     "quasar": "^2.16.0",
     "vue": "^3.4.18",
     "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@quasar/app-vite": "^2.0.0",
+    "@types/luxon": "^3.4.2",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
     "autoprefixer": "^10.4.2",
-    "postcss": "^8.4.14"
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-vue": "^9.0.0",
+    "postcss": "^8.4.14",
+    "prettier": "^2.5.1",
+    "typescript": "~5.5.4",
+    "vue-tsc": "2.0.29"
   },
   "engines": {
     "node": "^28 || ^26 || ^24 || ^22 || ^20 || ^18",

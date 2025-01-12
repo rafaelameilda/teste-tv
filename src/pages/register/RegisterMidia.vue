@@ -9,7 +9,7 @@
           :multiple="false"
           label="Clique aqui para escolher o arquivo"
           class="full-width"
-          :filter="checkFileType"
+          accept=".jpg,.jpeg, .mp4"
           @rejected="onRejected"
           @added="handleFileAdded"
         />
@@ -23,7 +23,7 @@
             outline
             icon="arrow_back"
             label="Voltar"
-            color="light-blue"
+            color="orange"
             @click="router.go(-1)"
             class="full-width"
           />
@@ -35,7 +35,7 @@
             outline
             label="Enviar Arquivo"
             color="light-blue"
-            @click="enviarArquivo()"
+            @click="sendFile()"
             class="full-width"
             :disable="!currentFile"
           />
@@ -47,78 +47,154 @@
 
     <q-card-section>
       <q-table
-        :title="'Arquivos Cadastrados'"
-        :rows="fileList"
+        :title="'Mídias Cadastradas'"
         :columns="columns"
+        :rows="fileList"
         row-key="name"
       />
     </q-card-section>
   </q-card>
 </template>
 
-<script setup>
-import { ref } from "vue";
+<script lang="ts">
+import { ref, defineComponent, onBeforeMount } from 'vue';
+import { useQuasar } from 'quasar';
+import { useRouter } from 'vue-router';
+import { MidiaService } from 'src/services/MidiasService';
+import {
+  formatDateWithUTC,
+  formatFileSize,
+  IColumns,
+} from 'src/services/utils';
 
-import { useQuasar } from "quasar";
-import { useRouter } from "vue-router";
+const columns = ref<IColumns<any>[]>([
+  {
+    name: 'nome_original',
+    field: 'nome_original',
+    label: 'Nome',
+    align: 'left',
+    sortable: true,
+    format: (row) => row.toUpperCase(),
+  },
+  {
+    name: 'formato',
+    field: 'formato',
+    label: 'Formato',
+    align: 'left',
+    sortable: true,
+    format: (row) => row.toUpperCase(),
+  },
+  {
+    name: 'tamanho',
+    field: 'tamanho',
+    label: 'Tamanho',
+    align: 'left',
+    sortable: true,
+    format: (row) => formatFileSize(row),
+  },
+  {
+    name: 'criado_em',
+    field: 'criado_em',
+    label: 'Dt. Cadastro',
+    align: 'left',
+    sortable: true,
+    format: (row) => formatDateWithUTC(row),
+  },
+]);
 
-const fileList = ref([]);
-const refsUploader = ref();
-const currentFile = ref();
-const router = useRouter();
-const $q = useQuasar();
+export default defineComponent({
+  name: 'RegisterMidia',
 
-const columns = [
-  { name: "name", label: "Nome do Arquivo", align: "left", field: "name" },
-  { name: "size", label: "Tamanho", align: "center", field: "size" },
-];
+  setup() {
+    const fileList = ref([]);
+    const refsUploader = ref();
+    const currentFile = ref();
+    const router = useRouter();
+    const $q = useQuasar();
 
-const enviarArquivo = () => {
-  if (!currentFile.value) return;
-  const newFile = {
-    name: currentFile.value.name,
-    size: `${(currentFile.value.size / 1024).toFixed(2)} KB`,
-  };
-  fileList.value.push(newFile);
-  currentFile.value = undefined;
-  testeFile();
-};
+    const midiaService = new MidiaService();
 
-function checkFileType(files) {
-  return files.filter((file) => file.type === "image/png");
-}
+    const getMidiasListHandle = async () => {
+      try {
+        $q.loading.show({
+          message: 'Pesquisando mídias cadastradas',
+          backgroundColor: 'blue-grey',
+        });
+        const midias = await midiaService.listMidia();
 
-function onRejected(rejectedEntries) {
-  // Notify plugin needs to be installed
-  // https://v2.quasar.dev/quasar-plugins/notify#Installation
-  console.log(rejectedEntries);
-  $q.notify({
-    type: "negative",
-    message: `${rejectedEntries.length} file(s) did not pass validation constraints`,
-  });
-}
+        fileList.value = midias;
+      } catch (error) {
+        $q.notify({
+          message: 'Erro ao carregar mídias cadastradas',
+          timeout: 3000,
+          progress: true,
+          type: 'negative',
+        });
+      } finally {
+        $q.loading.hide();
+      }
+    };
 
-const testeFile = (teste) => {
-  const uploader = refsUploader.value;
-  if (uploader) {
-    uploader.reset(); // Remove files from the uploader queue
-  }
-};
+    onBeforeMount(async () => {
+      await getMidiasListHandle();
+    });
 
-const triggerFileInput = () => {
-  const uploader = refsUploader.value;
-  if (uploader) {
-    uploader.pickFiles();
-  }
-};
+    const sendFile = () => {
+      if (!currentFile.value) return;
 
-const handleFileAdded = (files) => {
-  const file = files[0];
+      // TODO ENVIAR ARQUIVO PARA ROTA MIDIA/CREATE
 
-  if (file) {
-    currentFile.value = file;
-  }
-};
+      await getMidiasListHandle();
+
+      clearFilesList();
+    };
+
+    const checkFileType = (files) =>
+      files.filter((file) => ['image/png'].includes(file.type));
+
+    const onRejected = () => {
+      $q.notify({
+        type: 'negative',
+        message: 'Apenas arquivos .mp4 e .jpeg são aceitos.',
+      });
+    };
+
+    const clearFilesList = () => {
+      currentFile.value = undefined;
+      const uploader = refsUploader.value;
+      if (uploader) {
+        uploader.reset();
+      }
+    };
+
+    const triggerFileInput = () => {
+      const uploader = refsUploader.value;
+      if (uploader) {
+        uploader.pickFiles();
+      }
+    };
+
+    const handleFileAdded = (files) => {
+      const file = files[0];
+      if (file) {
+        currentFile.value = file;
+      }
+    };
+
+    return {
+      handleFileAdded,
+      sendFile,
+      triggerFileInput,
+      onRejected,
+      checkFileType,
+      currentFile,
+      router,
+      fileList,
+      refsUploader,
+      columns,
+    };
+  },
+});
 </script>
 
 <style scoped>

@@ -25,27 +25,27 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 
 const showOverlay = ref(false);
 
 const cards = [
   {
-    title: "Cadastro de Mídias",
-    icon: "collections",
-    bgClass: "bg-light-blue",
-    path: "register/midia",
+    title: 'Cadastro de Mídias',
+    icon: 'collections',
+    bgClass: 'bg-light-blue',
+    path: 'register/midia',
   },
   {
-    title: "Cadastro de Playlist",
-    icon: "playlist_play",
-    bgClass: "bg-blue-grey",
+    title: 'Cadastro de Playlist',
+    icon: 'playlist_play',
+    bgClass: 'bg-blue-grey',
   },
   {
-    title: "Cadastro de TVs",
-    icon: "tv",
-    bgClass: "bg-light-green",
+    title: 'Cadastro de TVs',
+    icon: 'tv',
+    bgClass: 'bg-light-green',
   },
 ];
 
