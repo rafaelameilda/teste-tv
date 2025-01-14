@@ -1,27 +1,39 @@
 <template>
   <q-card bordered>
-    <q-card-section>
-      <div class="full-width clickable-upload" @click="triggerFileInput">
-        <q-uploader
-          color="light-blue"
-          ref="refsUploader"
-          :hide-upload-btn="true"
-          :multiple="false"
-          label="Clique aqui para escolher o arquivo"
-          class="full-width"
-          accept=".jpg,.jpeg, .mp4"
-          @rejected="onRejected"
-          @added="handleFileAdded"
-        />
-      </div>
-    </q-card-section>
+    <q-expansion-item
+      expand-separator
+      icon="filter_list"
+      class="shadow-1 overflow-hidden col-12"
+      label="Cadastrar Mídia"
+      v-model="expandedForm"
+      caption="Clique aqui para lançar uma Mídia!"
+    >
+      <q-separator />
+      <q-card-section>
+        <div class="clickable-upload" @click="triggerFileInput">
+          <q-uploader
+            color="light-blue"
+            ref="refsUploader"
+            :hide-upload-btn="true"
+            :multiple="false"
+            label="Clique aqui para escolher o arquivo"
+            class="full-width"
+            accept=".jpg,.jpeg, .mp4"
+            @rejected="onRejected"
+            @added="handleFileAdded"
+          />
+        </div>
+      </q-card-section>
+    </q-expansion-item>
 
-    <q-card-actions class="q-gutter-xs">
+    <q-separator />
+
+    <q-card-actions>
       <div class="row full-width">
         <div class="col-12 col-md-2 q-pa-xs">
           <q-btn
             outline
-            icon="arrow_back"
+            icon="fa-solid fa-arrow-left"
             label="Voltar"
             color="orange"
             @click="router.go(-1)"
@@ -31,9 +43,9 @@
 
         <div class="col-12 col-md-10 q-pa-xs">
           <q-btn
-            icon="cloud_upload"
+            icon="fa-solid fa-cloud-arrow-up"
             outline
-            label="Enviar Arquivo"
+            label="Salvar"
             color="light-blue"
             @click="sendFile"
             class="full-width"
@@ -52,7 +64,6 @@
         :rows="fileList"
         row-key="id"
       >
-        <!-- Cabeçalho da tabela -->
         <template v-slot:header="props">
           <q-tr :props="props">
             <q-th auto-width />
@@ -76,11 +87,11 @@
                   color="negative"
                   rounded
                   flat
-                  icon="delete"
+                  icon="fa-solid fa-trash"
                   @click="deleteMidia(props.row.id)"
                 >
                   <q-tooltip class="bg-light-blue text-white"
-                    >Excluir</q-tooltip
+                    >Excluir Mídia</q-tooltip
                   >
                 </q-btn>
               </div>
@@ -352,6 +363,7 @@ export default defineComponent({
       abrirModal,
       isImage,
       isVideo,
+      expandedForm: ref(false),
     };
   },
 });

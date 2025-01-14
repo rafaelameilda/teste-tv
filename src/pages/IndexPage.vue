@@ -33,19 +33,19 @@ const showOverlay = ref(false);
 const cards = [
   {
     title: 'Cadastro de Mídias',
-    icon: 'collections',
+    icon: 'fa-solid fa-photo-film',
     bgClass: 'bg-light-blue',
     path: 'register/midia',
   },
   {
     title: 'Cadastro de Playlist',
-    icon: 'playlist_play',
+    icon: 'fa-solid fa-compact-disc',
     bgClass: 'bg-blue-grey',
     path: 'register/playlist',
   },
   {
     title: 'Cadastro de TVs',
-    icon: 'tv',
+    icon: 'fa-solid fa-tv',
     bgClass: 'bg-light-green',
   },
 ];

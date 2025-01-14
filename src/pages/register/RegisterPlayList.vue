@@ -1,28 +1,40 @@
 <template>
   <q-card bordered>
-    <q-card-section>
-      <q-form class="row row q-col-gutter-xs q-pa-xs" ref="formFieldsRef">
-        <q-input
-          v-model="formPlayList.name"
-          label="Nome da PlayList"
-          outlined
-          dense
-          color="blue-grey"
-          clearable
-          class="col-12"
-        />
-        <q-input
-          v-model="formPlayList.description"
-          label="Descrição da PlayList"
-          outlined
-          dense
-          color="blue-grey"
-          clearable
-          class="col-12"
-          type="textarea"
-        />
-      </q-form>
-    </q-card-section>
+    <q-expansion-item
+      expand-separator
+      icon="filter_list"
+      class="shadow-1 overflow-hidden col-12"
+      label="Cadastrar PlayList"
+      v-model="expandedForm"
+      caption="Clique aqui para lançar uma PlayList!"
+    >
+      <q-separator />
+      <q-card-section>
+        <q-form class="row row q-col-gutter-xs q-pa-xs" ref="formFieldsRef">
+          <q-input
+            v-model="formPlayList.name"
+            label="Nome da PlayList"
+            outlined
+            dense
+            color="blue-grey"
+            clearable
+            class="col-12"
+            :rules="rulesInput('Nome da PlayList deve ser informado')"
+          />
+          <q-input
+            v-model="formPlayList.description"
+            label="Descrição da PlayList"
+            outlined
+            dense
+            color="blue-grey"
+            clearable
+            class="col-12"
+            type="textarea"
+            :rules="rulesInput('Descrição da PlayList deve ser informado')"
+          />
+        </q-form>
+      </q-card-section>
+    </q-expansion-item>
 
     <q-separator />
 
@@ -31,7 +43,7 @@
         <div class="col-12 col-md-2 q-pa-xs">
           <q-btn
             outline
-            icon="arrow_back"
+            icon="fa-solid fa-arrow-left"
             label="Voltar"
             color="orange"
             @click="router.go(-1)"
@@ -41,11 +53,12 @@
 
         <div class="col-12 col-md-10 q-pa-xs">
           <q-btn
-            icon="save"
+            icon="fa-solid fa-floppy-disk"
             outline
             label="Salvar"
             color="blue-grey"
             class="full-width"
+            @click="createPlayList"
           />
         </div>
       </div>
@@ -54,19 +67,265 @@
     <q-separator />
 
     <q-card-section>
-      <q-table row-key="id" :rows="playlistList"></q-table>
+      <q-table
+        :title="'PlayLists Cadastradas'"
+        row-key="id"
+        :columns="columns"
+        :rows="playlistList"
+      >
+        <template v-slot:header="props">
+          <q-tr :props="props">
+            <q-th auto-width />
+            <q-th
+              v-for="col in columns"
+              :key="col.name"
+              :props="props"
+              class="headdress"
+            >
+              {{ col.label }}
+            </q-th>
+          </q-tr>
+        </template>
+
+        <template v-slot:body="props">
+          <q-tr :props="props">
+            <q-td auto-width>
+              <div class="q-gutter-xs">
+                <q-btn
+                  size="md"
+                  color="negative"
+                  rounded
+                  flat
+                  icon="fa-solid fa-trash"
+                  @click="deletePlayList(props.row.id)"
+                >
+                  <q-tooltip class="bg-blue-grey text-white"
+                    >Excluir Play List</q-tooltip
+                  >
+                </q-btn>
+                <q-btn
+                  size="md"
+                  color="blue-grey"
+                  rounded
+                  flat
+                  :icon="'fa-solid fa-pencil'"
+                  @click="showModalEdit = true"
+                >
+                  <q-tooltip class="bg-blue-grey text-white"
+                    >Editar Play List</q-tooltip
+                  >
+                </q-btn>
+                <q-btn
+                  size="md"
+                  color="blue-grey"
+                  rounded
+                  flat
+                  :icon="
+                    props.expand
+                      ? 'fa-solid fa-folder-minus'
+                      : 'fa-solid fa-folder-plus'
+                  "
+                  @click="getExpand(props)"
+                >
+                  <q-tooltip class="bg-blue-grey text-white"
+                    >Ver Mídias Adicionadas</q-tooltip
+                  >
+                </q-btn>
+              </div>
+            </q-td>
+
+            <q-td v-for="col in columns" :key="col.name" :props="props">
+              <span>
+                {{
+                  col.format
+                    ? col.format(props.row[col.field], props.row)
+                    : props.row[col.field]
+                }}
+              </span>
+            </q-td>
+          </q-tr>
+
+          <q-tr v-show="props.expand" :props="props">
+            <q-td colspan="100%">
+              <div class="text-left">{{ props.row }}</div>
+            </q-td>
+          </q-tr>
+        </template>
+      </q-table>
     </q-card-section>
   </q-card>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { PlayListService } from 'src/services/PlayListService';
+import { ref, onBeforeMount } from 'vue';
 import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
+import { formatDateWithUTC } from 'src/services/utils';
+import { MidiaService } from 'src/services/MidiasService';
+
+const playListService = new PlayListService();
+const midiaService = new MidiaService();
 
 const formPlayList = ref({ name: '', description: '' });
 const formFieldsRef = ref();
+const expandedForm = ref(false);
+const showModalEdit = ref(false);
 const router = useRouter();
 const playlistList = ref([]);
+const $q = useQuasar();
+const fileList = ref([]);
+
+const columns = [
+  {
+    name: 'nome',
+    field: 'nome',
+    label: 'Nome',
+    align: 'left',
+    sortable: true,
+    format: (row) => row.toUpperCase(),
+  },
+  {
+    name: 'descricao',
+    field: 'descricao',
+    label: 'Descrição',
+    align: 'left',
+    sortable: true,
+    format: (row) => row.toUpperCase(),
+  },
+  {
+    name: 'criado_em',
+    field: 'criado_em',
+    label: 'Dt. Cadastro',
+    align: 'left',
+    sortable: true,
+    format: (row) => formatDateWithUTC(row),
+  },
+];
+
+const getMidiasListHandle = async () => {
+  try {
+    $q.loading.show({
+      message: 'Pesquisando mídias cadastradas',
+      backgroundColor: 'blue-grey',
+    });
+    const midias = await midiaService.listMidia();
+    fileList.value = midias;
+  } catch (error) {
+    $q.notify({
+      message: 'Erro ao carregar mídias cadastradas',
+      timeout: 3000,
+      progress: true,
+      type: 'negative',
+    });
+  } finally {
+    $q.loading.hide();
+  }
+};
+
+const getAllPlayListHandle = async () => {
+  try {
+    $q.loading.show({
+      message: 'Pesquisando PlayList',
+      backgroundColor: 'blue-grey',
+    });
+
+    const playList = await playListService.listPlayList();
+    playlistList.value = playList;
+  } catch {
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao pesquisar playlist.',
+      progress: true,
+      timeout: 3000,
+    });
+  } finally {
+    $q.loading.hide();
+  }
+};
+
+const createPlayList = async () => {
+  try {
+    $q.loading.show({
+      message: 'Criando PlayList.',
+      backgroundColor: 'blue-grey',
+    });
+    expandedForm.value = true;
+
+    const valid = await formFieldsRef?.value?.validate(true);
+    if (!valid) {
+      return $q.notify({
+        message: 'Preencha todos os campos obrigatórios!',
+        type: 'warning',
+        progress: true,
+        timeout: 3000,
+      });
+    }
+
+    await playListService.createPlayList({ ...formPlayList.value });
+
+    $q.notify({
+      type: 'positive',
+      message: 'Cadastro realizado com sucesso.',
+      progress: true,
+      timeout: 3000,
+    });
+
+    formPlayList.value = {};
+    await formFieldsRef?.value?.resetValidation();
+    await formFieldsRef?.value?.resetValidation();
+    expandedForm.value = false;
+    await getAllPlayListHandle();
+  } catch {
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao realizar cadastro.',
+      progress: true,
+      timeout: 3000,
+    });
+  } finally {
+    $q.loading.hide();
+  }
+};
+
+const deletePlayList = async (id) => {
+  try {
+    $q.loading.show({
+      message: 'Deletando PlayList...',
+      backgroundColor: 'blue-grey',
+    });
+
+    await playListService.deletePlayList(id);
+
+    $q.notify({
+      type: 'positive',
+      message: 'PlayList deletada com sucesso!',
+      progress: true,
+      timeout: 3000,
+    });
+
+    await getAllPlayListHandle();
+  } catch (error) {
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao deletar PlayList.',
+      progress: true,
+      timeout: 3000,
+    });
+  } finally {
+    $q.loading.hide();
+  }
+};
+
+const getExpand = async (props) => {
+  props.expand = !props.expand;
+};
+
+const rulesInput = (message) => [(val) => !!val || message];
+
+onBeforeMount(async () => {
+  await getAllPlayListHandle();
+});
 </script>
 
 <style scoped></style>
