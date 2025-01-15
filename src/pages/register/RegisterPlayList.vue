@@ -121,7 +121,7 @@
                   color="blue-grey"
                   rounded
                   flat
-                  icon="fa-solid fa-tv"
+                  icon="fa-solid fa-eye"
                   @click="verTvHomeHandle(props.row)"
                 >
                   <q-tooltip class="bg-blue-grey text-white"
@@ -515,3 +515,9 @@ onBeforeMount(async () => {
   await getAllPlayListHandle();
 });
 </script>
+
+<style scoped>
+.headdress {
+  font-weight: bold;
+}
+</style>

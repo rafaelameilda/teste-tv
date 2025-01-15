@@ -43,7 +43,7 @@
 
         <div class="col-12 col-md-10 q-pa-xs">
           <q-btn
-            icon="fa-solid fa-cloud-arrow-up"
+            icon="fa-solid fa-floppy-disk"
             outline
             label="Salvar"
             color="light-blue"
@@ -94,20 +94,22 @@
                     >Excluir Mídia</q-tooltip
                   >
                 </q-btn>
+                <q-btn
+                  dense
+                  flat
+                  color="light-blue"
+                  icon="fa-solid fa-eye"
+                  @click="abrirModal(props.row.url)"
+                >
+                  <q-tooltip class="bg-light-blue text-white"
+                    >Visualizar Mídia</q-tooltip
+                  >
+                </q-btn>
               </div>
             </q-td>
 
             <q-td v-for="col in columns" :key="col.name" :props="props">
-              <div v-if="col.name === 'caminho'">
-                <q-btn
-                  dense
-                  outline
-                  color="light-blue"
-                  label="Visualizar"
-                  @click="abrirModal(props.row.url)"
-                />
-              </div>
-              <span v-else>
+              <span>
                 {{
                   col.format
                     ? col.format(props.row[col.field], props.row)
@@ -202,13 +204,6 @@ const columns = ref<IColumns<any>[]>([
     align: 'left',
     sortable: true,
     format: (row) => formatDateWithUTC(row),
-  },
-  {
-    name: 'caminho',
-    field: 'caminho',
-    label: 'Visualizar',
-    align: 'left',
-    sortable: true,
   },
 ]);
 
