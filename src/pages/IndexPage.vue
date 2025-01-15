@@ -47,6 +47,7 @@ const cards = [
     title: 'Cadastro de TVs',
     icon: 'fa-solid fa-tv',
     bgClass: 'bg-light-green',
+    path:"register/tv"
   },
 ];
 

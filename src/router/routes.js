@@ -24,6 +24,12 @@ const routes = [
             component: () => import('pages/register/RegisterPlayList.vue'),
             meta: { title: 'Cadastrar PlayList', color: 'bg-blue-grey' },
           },
+          {
+            name: 'register-tv',
+            path: 'tv',
+            component: () => import('pages/register/RegisterTv.vue'),
+            meta: { title: 'Cadastrar TVs', color: 'bg-light-green' },
+          },
         ],
       },
     ],

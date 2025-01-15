@@ -205,7 +205,6 @@
           A visualização aqui é a mesma que você verá na TV cadastrada
         </div>
       </q-card-section>
-
       <q-carousel
         control-type="regular"
         control-color="blue-grey"
@@ -500,6 +499,7 @@ const verTvHomeHandle = async (row) => {
     return {
       type: midia.formato.includes('video') ? 'video' : 'image',
       time: midia.time,
+      id: midia.id,
       url: `${env.baseURL}/arquivos/${midia.nome}`,
     };
   });
