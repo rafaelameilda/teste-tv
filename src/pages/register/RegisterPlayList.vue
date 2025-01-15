@@ -108,27 +108,24 @@
                   color="blue-grey"
                   rounded
                   flat
-                  :icon="'fa-solid fa-pencil'"
-                  @click="showModalEdit = true"
+                  icon="fa-solid fa-plus"
+                  @click="abrirModalEdicao(props.row)"
                 >
                   <q-tooltip class="bg-blue-grey text-white"
-                    >Editar Play List</q-tooltip
+                    >Adicionar Mídias a Play List</q-tooltip
                   >
                 </q-btn>
                 <q-btn
+                  v-if="props.row.midias.length"
                   size="md"
                   color="blue-grey"
                   rounded
                   flat
-                  :icon="
-                    props.expand
-                      ? 'fa-solid fa-folder-minus'
-                      : 'fa-solid fa-folder-plus'
-                  "
-                  @click="getExpand(props)"
+                  icon="fa-solid fa-tv"
+                  @click="verTvHomeHandle(props.row)"
                 >
                   <q-tooltip class="bg-blue-grey text-white"
-                    >Ver Mídias Adicionadas</q-tooltip
+                    >Visualizar PlayList TV</q-tooltip
                   >
                 </q-btn>
               </div>
@@ -154,6 +151,105 @@
       </q-table>
     </q-card-section>
   </q-card>
+
+  <q-dialog v-model="showModalEdit" persistent>
+    <q-card style="width: 900px; max-width: 90vw">
+      <q-card-section class="bg-blue-grey">
+        <div class="text-h6 text-white">
+          Selecionar mídias que deseja adicionar
+        </div>
+        <div class="text-h8 text-white">
+          Lembre-se que quanto mais leve o tamanho total da lista melhor a
+          exibição
+        </div>
+      </q-card-section>
+      <q-card-section>
+        <q-table
+          :rows="fileList"
+          row-key="id"
+          :columns="midiaColumns"
+          selection="multiple"
+          v-model:selected="selectedMidias"
+        >
+          <template v-slot:body-cell-selecionado="props">
+            <q-td :props="props">
+              <q-checkbox v-model="props.selected" />
+            </q-td>
+          </template>
+        </q-table>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn
+          outline
+          label="Cancelar"
+          icon="fa-solid fa-xmark"
+          color="negative"
+          @click="showModalEdit = false"
+        />
+        <q-btn
+          outline
+          label="Adicionar Mídias"
+          color="blue-grey"
+          icon="fa-solid fa-plus"
+          @click="adicionarMidiaNaPlayList"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="showModalTV" persistent>
+    <q-card style="width: 50%; max-width: 100%">
+      <q-card-section class="bg-blue-grey">
+        <div class="text-h6 text-white">Prévia da exibição da playlist</div>
+        <div class="text-h8 text-white">
+          A visualização aqui é a mesma que você verá na TV cadastrada
+        </div>
+      </q-card-section>
+
+      <q-carousel
+        control-type="regular"
+        control-color="blue-grey"
+        next-icon="fas fa-arrow-right"
+        prev-icon="fas fa-arrow-left"
+        v-model="currentFile"
+        arrows
+        animated
+        infinite
+        transition-prev="scale"
+        transition-next="scale"
+      >
+        <q-carousel-slide
+          v-for="arquivo in playListTV"
+          :key="arquivo.url"
+          :name="arquivo.url"
+        >
+          <q-video
+            class="absolute-full"
+            v-if="arquivo.type === 'video'"
+            :src="arquivo.url"
+          />
+
+          <q-img
+            class="absolute-full"
+            v-if="arquivo.type === 'image'"
+            :src="arquivo.url"
+          />
+        </q-carousel-slide>
+      </q-carousel>
+
+      <q-separator />
+
+      <q-card-actions class="q-pa-sm q-gutter-sm">
+        <q-btn
+          outline
+          label="Fechar"
+          icon="fa-solid fa-xmark"
+          color="negative"
+          @click="showModalTV = false"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -161,20 +257,26 @@ import { PlayListService } from 'src/services/PlayListService';
 import { ref, onBeforeMount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
-import { formatDateWithUTC } from 'src/services/utils';
+import { formatDateWithUTC, formatFileSize } from 'src/services/utils';
 import { MidiaService } from 'src/services/MidiasService';
+
+import env from 'src/enviroments/env';
 
 const playListService = new PlayListService();
 const midiaService = new MidiaService();
 
 const formPlayList = ref({ name: '', description: '' });
 const formFieldsRef = ref();
+const currentFile = ref();
 const expandedForm = ref(false);
 const showModalEdit = ref(false);
+const showModalTV = ref(false);
 const router = useRouter();
 const playlistList = ref([]);
 const $q = useQuasar();
 const fileList = ref([]);
+const selectedMidias = ref([]);
+const playListTV = ref([]);
 
 const columns = [
   {
@@ -203,6 +305,41 @@ const columns = [
   },
 ];
 
+const midiaColumns = ref([
+  {
+    name: 'nome_original',
+    field: 'nome_original',
+    label: 'Nome',
+    align: 'left',
+    sortable: true,
+    format: (row) => row.toUpperCase(),
+  },
+  {
+    name: 'formato',
+    field: 'formato',
+    label: 'Formato',
+    align: 'left',
+    sortable: true,
+    format: (row) => row.toUpperCase(),
+  },
+  {
+    name: 'tamanho',
+    field: 'tamanho',
+    label: 'Tamanho',
+    align: 'left',
+    sortable: true,
+    format: (row) => formatFileSize(row),
+  },
+  {
+    name: 'criado_em',
+    field: 'criado_em',
+    label: 'Dt. Cadastro',
+    align: 'left',
+    sortable: true,
+    format: (row) => formatDateWithUTC(row),
+  },
+]);
+
 const getMidiasListHandle = async () => {
   try {
     $q.loading.show({
@@ -220,6 +357,47 @@ const getMidiasListHandle = async () => {
     });
   } finally {
     $q.loading.hide();
+  }
+};
+
+const adicionarMidiaNaPlayList = async () => {
+  try {
+    await playListService.addMidia(formPlayList.value.id, selectedMidias.value);
+
+    $q.notify({
+      type: 'positive',
+      message: 'Mídias adicionadas à playlist!',
+      timeout: 3000,
+      progress: true,
+    });
+
+    await getAllPlayListHandle();
+    showModalEdit.value = false;
+    formPlayList.value = {};
+    selectedMidias.value = [];
+  } catch {
+    $q.notify({
+      type: 'negative',
+      message: 'Erro ao adicionar mídias à playlist!',
+      timeout: 3000,
+      progress: true,
+    });
+  }
+};
+
+const abrirModalEdicao = async (playlist) => {
+  try {
+    formPlayList.value = { ...playlist };
+
+    await getMidiasListHandle();
+    showModalEdit.value = true;
+  } catch {
+    $q.notify({
+      message: 'Erro ao abrir modal de edição.',
+      type: 'negative',
+      timeout: 3000,
+      progress: true,
+    });
   }
 };
 
@@ -317,8 +495,18 @@ const deletePlayList = async (id) => {
   }
 };
 
-const getExpand = async (props) => {
-  props.expand = !props.expand;
+const verTvHomeHandle = async (row) => {
+  playListTV.value = row.midias.map((midia) => {
+    return {
+      type: midia.formato.includes('video') ? 'video' : 'image',
+      time: midia.time,
+      url: `${env.baseURL}/arquivos/${midia.nome}`,
+    };
+  });
+
+  currentFile.value = playListTV.value[0].url;
+
+  showModalTV.value = true;
 };
 
 const rulesInput = (message) => [(val) => !!val || message];
@@ -327,5 +515,3 @@ onBeforeMount(async () => {
   await getAllPlayListHandle();
 });
 </script>
-
-<style scoped></style>

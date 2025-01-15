@@ -18,6 +18,10 @@ class PlayListService {
     await this.repository.post('playlist/create', params);
   }
 
+  async addMidia(id, params) {
+    await this.repository.post(`playlist/add-midia/${id}`, params);
+  }
+
   async deletePlayList(id) {
     await this.repository.delete(`playlist/delete/${id}`);
   }
