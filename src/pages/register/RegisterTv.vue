@@ -174,7 +174,7 @@ const tvs = ref([]);
 const playListsOptions = ref([]);
 const formFieldsRef = ref();
 const $q = useQuasar();
-const expandedForm = ref(true);
+const expandedForm = ref(false);
 const formTV = ref({ nameTv: '', playList: undefined });
 
 const getAllPlayListHandle = async () => {
