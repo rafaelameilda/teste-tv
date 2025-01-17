@@ -44,7 +44,7 @@ export default {
         { type: "image", time: 4000, url: "/images/imagem1.jpeg" },
         { type: "image", time: 4000, url: "/images/imagem2.jpeg" },
         { type: "image", time: 4000, url: "/images/imagem3.jpeg" },
-        { type: "video", url: "/videos/video 1.mp4" },
+        //{ type: "video", url: "/videos/video 1.mp4" },
       ],
       slideTimeout: null,
       videoElement: null, // Variável para armazenar o vídeo atual
