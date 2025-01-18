@@ -134,10 +134,10 @@
             <q-td v-for="col in columns" :key="col.name" :props="props">
               <div v-if="col.name === 'playlist_nome'">
                 <span class="cursor-pointer text-light-green"
-                  >{{ props.row[col.name].toUpperCase() }}
+                  >{{ props.row[col.name]?.toUpperCase() }}
 
                   <q-tooltip class="bg-light-green text-white">{{
-                    props.row.playlist_descricao.toUpperCase()
+                    props.row.playlist_descricao?.toUpperCase()
                   }}</q-tooltip></span
                 >
               </div>

@@ -34,117 +34,128 @@
   </q-page>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { useRoute } from 'vue-router';
 import { TvsService } from 'src/services/TvsService';
 import env from 'src/enviroments/env';
-import { useRoute } from 'vue-router';
+import { io } from 'socket.io-client';
 
-export default {
-  data() {
-    return {
-      currentSlide: 0,
-      playlist: [],
-      slideTimeout: null,
-      videoElement: null, // Variável para armazenar o vídeo atual
-    };
-  },
-  mounted() {
-    // this.startSlideTimer(); // Inicia o temporizador no primeiro slide
-    // this.prefetchNextMedia(); // Pré-carrega a próxima mídia
-    this.getMidias();
-  },
-  methods: {
-    onSlideChange(newIndex) {
-      clearTimeout(this.slideTimeout); // Limpa qualquer timeout anterior
-      this.currentSlide = newIndex;
-      this.startSlideTimer(); // Reinicia o temporizador ao mudar o slide
-      this.prefetchNextMedia(); // Pré-carrega a próxima mídia
-    },
+const currentSlide = ref(0);
+const playlist = ref([]);
+const slideTimeout = ref(null);
+let videoElement = null; // Variável para armazenar o vídeo atual
 
-    startSlideTimer() {
-      clearTimeout(this.slideTimeout); // Limpa qualquer timeout anterior
+const route = useRoute();
+const tvsService = new TvsService();
+const socket = io(env.baseURL);
 
-      const currentMedia = this.playlist[this.currentSlide];
-
-      if (currentMedia.type === 'image') {
-        this.slideTimeout = setTimeout(() => {
-          this.nextSlide(); // Chama o nextSlide para trocar o slide
-        }, currentMedia.time);
-      }
-      // Se for vídeo, a troca será controlada pelo evento @ended
-    },
-
-    nextSlide() {
-      // O módulo de índice garante que a playlist sempre reinicie após o último slide
-      this.currentSlide = (this.currentSlide + 1) % this.playlist.length;
-
-      // Reinicia o temporizador após trocar o slide
-      this.startSlideTimer(); // Chama o startSlideTimer para configurar o tempo do novo slide
-
-      // Pré-carregar a próxima mídia
-      this.prefetchNextMedia();
-    },
-
-    funcaoVideoFim() {
-      this.removeVideoElement(); // Remove o vídeo após o fim
-      this.nextSlide();
-    },
-
-    prefetchNextMedia() {
-      const nextIndex = (this.currentSlide + 1) % this.playlist.length;
-      const nextMedia = this.playlist[nextIndex];
-
-      if (nextMedia.type === 'image') {
-        const img = new Image();
-        img.src = nextMedia.url;
-      } else if (nextMedia.type === 'video') {
-        if (this.videoElement) {
-          // Se já existir um vídeo em memória, remova-o
-          this.removeVideoElement();
-        }
-
-        this.videoElement = document.createElement('video');
-        this.videoElement.src = nextMedia.url;
-        this.videoElement.preload = 'auto';
-        this.videoElement.onended = this.funcaoVideoFim; // Chama a função de finalização
-      }
-    },
-
-    removeVideoElement() {
-      if (this.videoElement) {
-        // Remove o vídeo do DOM e limpa as referências
-        this.videoElement.remove();
-        this.videoElement = null;
-      }
-    },
-
-    // Função para obter as mídias
-    async getMidias() {
-      const route = useRoute();
-      const tvsService = new TvsService();
-      const id = route.params.id; // Obtém o id da URL através do useRoute
-
-      if (!id) return;
-
-      try {
-        const medias = await tvsService.getMidiasByTv(id);
-
-        this.playlist = medias.map((media) => ({
-          type: media.type,
-          time: media.time,
-          url: `${env.baseURL}${media.url}`,
-        }));
-
-        if (this.playlist.length > 0) {
-          this.startSlideTimer();
-          this.prefetchNextMedia();
-        }
-      } catch (error) {
-        console.error('Erro ao obter mídias:', error);
-      }
-    },
-  },
+const onSlideChange = (newIndex) => {
+  clearTimeout(slideTimeout.value); // Limpa qualquer timeout anterior
+  currentSlide.value = newIndex;
+  startSlideTimer(); // Reinicia o temporizador ao mudar o slide
+  prefetchNextMedia(); // Pré-carrega a próxima mídia
 };
+
+const startSlideTimer = () => {
+  clearTimeout(slideTimeout.value); // Limpa qualquer timeout anterior
+
+  const currentMedia = playlist.value[currentSlide.value];
+
+  if (currentMedia.type === 'image') {
+    slideTimeout.value = setTimeout(() => {
+      nextSlide(); // Chama o nextSlide para trocar o slide
+    }, currentMedia.time);
+  }
+  // Se for vídeo, a troca será controlada pelo evento @ended
+};
+
+const nextSlide = () => {
+  // O módulo de índice garante que a playlist sempre reinicie após o último slide
+  currentSlide.value = (currentSlide.value + 1) % playlist.value.length;
+
+  // Reinicia o temporizador após trocar o slide
+  startSlideTimer(); // Chama o startSlideTimer para configurar o tempo do novo slide
+
+  // Pré-carregar a próxima mídia
+  prefetchNextMedia();
+};
+
+const funcaoVideoFim = () => {
+  removeVideoElement(); // Remove o vídeo após o fim
+  nextSlide();
+};
+
+const prefetchNextMedia = () => {
+  const nextIndex = (currentSlide.value + 1) % playlist.value.length;
+  const nextMedia = playlist.value[nextIndex];
+
+  if (nextMedia.type === 'image') {
+    const img = new Image();
+    img.src = nextMedia.url;
+  } else if (nextMedia.type === 'video') {
+    if (videoElement) {
+      // Se já existir um vídeo em memória, remova-o
+      removeVideoElement();
+    }
+
+    videoElement = document.createElement('video');
+    videoElement.src = nextMedia.url;
+    videoElement.preload = 'auto';
+    videoElement.onended = funcaoVideoFim; // Chama a função de finalização
+  }
+};
+
+const removeVideoElement = () => {
+  if (videoElement) {
+    // Remove o vídeo do DOM e limpa as referências
+    videoElement.remove();
+    videoElement = null;
+  }
+};
+
+socket.on("connect", () => {
+  console.log("Conectado ao servidor!");
+});
+
+socket.on('playlistUpdated', (data) => {
+  const idTv = route.params.id
+  const currentTv = data.tvs.find(tv=>tv.identificador?.toString() ===idTv)
+  
+  if(currentTv) getMidias(); // Chama o getMidias novamente
+});
+
+onBeforeUnmount(() => {
+  socket.off('playlistUpdated'); // Desconecta o evento ao desmontar o componente
+});
+
+// Função para obter as mídias
+const getMidias = async () => {
+  const id = route.params.id; // Obtém o id da URL através do useRoute
+
+  if (!id) return;
+
+  try {
+    const medias = await tvsService.getMidiasByTv(id);
+
+    playlist.value = medias.map((media) => ({
+      type: media.type,
+      time: media.time,
+      url: `${env.baseURL}${media.url}`,
+    }));
+
+    if (playlist.value.length > 0) {
+      startSlideTimer();
+      prefetchNextMedia();
+    }
+  } catch (error) {
+    console.error('Erro ao obter mídias:', error);
+  }
+};
+
+onMounted(() => {
+  getMidias();
+});
 </script>
 
 <style>
