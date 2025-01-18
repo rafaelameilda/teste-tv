@@ -32,6 +32,11 @@ const routes = [
           },
         ],
       },
+      {
+        name: 'tv',
+        path: '/tv/:id',
+        component: () => import('pages/HomeTV.vue'),
+      },
     ],
   },
 

@@ -102,6 +102,32 @@
                     >Excluir Mídia</q-tooltip
                   >
                 </q-btn>
+                <q-btn
+                  size="md"
+                  color="light-green"
+                  rounded
+                  flat
+                  icon="fa-solid fa-up-right-from-square"
+                  @click="goToTvID(props.row)"
+                
+                >
+                  <q-tooltip class="bg-light-green text-white"
+                    >Abrir PlayList</q-tooltip
+                  >
+                </q-btn>
+                <q-btn
+                  size="md"
+                  color="light-green"
+                  rounded
+                  flat
+                  icon="fa-solid fa-copy"
+                  @click="copyLink(props.row)"
+            
+                >
+                  <q-tooltip class="bg-light-green text-white"
+                    >Copiar Link da PlayList</q-tooltip
+                  >
+                </q-btn>
               </div>
             </q-td>
 
@@ -134,18 +160,18 @@
 import { PlayListService } from 'src/services/PlayListService';
 import { ref, onBeforeMount } from 'vue';
 import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
+import { useQuasar,copyToClipboard  } from 'quasar';
 import { formatDateWithUTC } from 'src/services/utils';
 import { TvsService } from 'src/services/TvsService';
 
 const columns = [
   {
-    name: 'identificador',
-    field: 'identificador',
+    name: 'nome',
+    field: 'nome',
     label: 'Nome TV',
     align: 'left',
     sortable: true,
-    format: (row) => row.toUpperCase(),
+    format: (row) => row?.toUpperCase(),
   },
   {
     name: 'playlist_nome',
@@ -153,7 +179,7 @@ const columns = [
     label: 'PlayList',
     align: 'left',
     sortable: true,
-    format: (row) => row.toUpperCase(),
+    format: (row) => row?.toUpperCase(),
   },
   {
     name: 'criado_em',
@@ -289,6 +315,34 @@ const deleteTv = async (id) => {
     });
   } finally {
     $q.loading.hide();
+  }
+};
+
+const goToTvID = async(row)=>{
+  const host = window.location.origin; 
+  const url = `${host}/#/tv/${row.identificador}`;
+  window.open(url, '_blank');
+}
+
+const copyLink = async (row) => {
+  const host = window.location.origin; 
+  const url = `${host}/#/tv/${row.identificador}`;
+
+  try {
+    await copyToClipboard(url);
+    $q.notify({
+      message: 'Link copiado com sucesso!',
+      color: 'positive',
+      progress: true,
+      timeout: 3000,
+    });
+  } catch (error) {
+    $q.notify({
+      message: 'Erro ao copiar o link.',
+      color: 'negative',
+      progress: true,
+      timeout: 3000,
+    });
   }
 };
 

@@ -18,12 +18,13 @@ class TvsService {
     await this.repository.post('tv/create', params);
   }
 
-  //   async addMidia(id, params) {
-  //     await this.repository.post(`playlist/add-midia/${id}`, params);
-  //   }
-
   async deleteTv(id) {
     await this.repository.delete(`tv/delete/${id}`);
+  }
+
+  async getMidiasByTv(id) {
+    const { data } = await this.repository.get(`tv/midias/${id}`);
+    return data;
   }
 }
 

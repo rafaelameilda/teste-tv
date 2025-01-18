@@ -35,22 +35,23 @@
 </template>
 
 <script>
+import { TvsService } from 'src/services/TvsService';
+import env from 'src/enviroments/env';
+import { useRoute } from 'vue-router';
+
 export default {
   data() {
     return {
       currentSlide: 0,
-      playlist: [
-        { type: "image", time: 2000, url: "/images/segtec.jpeg" },
-        { type: "video", url: "http://localhost:3000/arquivos/teste.mp4" },
-        { type: "image", time: 2000, url: "/images/segtec.jpeg" },
-      ],
+      playlist: [],
       slideTimeout: null,
       videoElement: null, // Variável para armazenar o vídeo atual
     };
   },
   mounted() {
-    this.startSlideTimer(); // Inicia o temporizador no primeiro slide
-    this.prefetchNextMedia(); // Pré-carrega a próxima mídia
+    // this.startSlideTimer(); // Inicia o temporizador no primeiro slide
+    // this.prefetchNextMedia(); // Pré-carrega a próxima mídia
+    this.getMidias();
   },
   methods: {
     onSlideChange(newIndex) {
@@ -65,7 +66,7 @@ export default {
 
       const currentMedia = this.playlist[this.currentSlide];
 
-      if (currentMedia.type === "image") {
+      if (currentMedia.type === 'image') {
         this.slideTimeout = setTimeout(() => {
           this.nextSlide(); // Chama o nextSlide para trocar o slide
         }, currentMedia.time);
@@ -84,7 +85,7 @@ export default {
       this.prefetchNextMedia();
     },
 
-    funcaoVideoFim(dados) {
+    funcaoVideoFim() {
       this.removeVideoElement(); // Remove o vídeo após o fim
       this.nextSlide();
     },
@@ -93,18 +94,18 @@ export default {
       const nextIndex = (this.currentSlide + 1) % this.playlist.length;
       const nextMedia = this.playlist[nextIndex];
 
-      if (nextMedia.type === "image") {
+      if (nextMedia.type === 'image') {
         const img = new Image();
         img.src = nextMedia.url;
-      } else if (nextMedia.type === "video") {
+      } else if (nextMedia.type === 'video') {
         if (this.videoElement) {
           // Se já existir um vídeo em memória, remova-o
           this.removeVideoElement();
         }
 
-        this.videoElement = document.createElement("video");
+        this.videoElement = document.createElement('video');
         this.videoElement.src = nextMedia.url;
-        this.videoElement.preload = "auto";
+        this.videoElement.preload = 'auto';
         this.videoElement.onended = this.funcaoVideoFim; // Chama a função de finalização
       }
     },
@@ -114,6 +115,32 @@ export default {
         // Remove o vídeo do DOM e limpa as referências
         this.videoElement.remove();
         this.videoElement = null;
+      }
+    },
+
+    // Função para obter as mídias
+    async getMidias() {
+      const route = useRoute();
+      const tvsService = new TvsService();
+      const id = route.params.id; // Obtém o id da URL através do useRoute
+
+      if (!id) return;
+
+      try {
+        const medias = await tvsService.getMidiasByTv(id);
+
+        this.playlist = medias.map((media) => ({
+          type: media.type,
+          time: media.time,
+          url: `${env.baseURL}${media.url}`,
+        }));
+
+        if (this.playlist.length > 0) {
+          this.startSlideTimer();
+          this.prefetchNextMedia();
+        }
+      } catch (error) {
+        console.error('Erro ao obter mídias:', error);
       }
     },
   },

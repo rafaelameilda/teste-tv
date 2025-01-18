@@ -258,7 +258,6 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { formatDateWithUTC, formatFileSize } from 'src/services/utils';
 import { MidiaService } from 'src/services/MidiasService';
-
 import env from 'src/enviroments/env';
 
 const playListService = new PlayListService();
