@@ -16,7 +16,7 @@ const result = computed(() =>
 </script>
 
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="full-height flex column">
     <!-- Toolbar fixa no topo -->
     <q-toolbar class="bg-secondary text-white">
       <q-toolbar-title class="text-subtitle1">
@@ -24,13 +24,9 @@ const result = computed(() =>
       </q-toolbar-title>
     </q-toolbar>
 
-    <!-- Container para centralizar o card vertical e horizontalmente -->
-    <div class="flex flex-center" style="height: calc(100vh - 100px);">
-      <q-card
-        bordered
-        class="q-pa-md q-gutter-md"
-        style="min-width: 500px; width: 100%; max-width: 600px;"
-      >
+    <!-- Container flex para centralizar o card responsivamente -->
+    <div class="flex flex-center col-grow">
+      <q-card bordered class="q-pa-md" style="max-width: 650px; width: 90vw;">
         <q-card-section class="q-gutter-md">
           <q-input v-model="time1" label="Hora 1 (HH:MM)" mask="##:##" filled />
           <q-input v-model="time2" label="Hora 2 (HH:MM)" mask="##:##" filled />
