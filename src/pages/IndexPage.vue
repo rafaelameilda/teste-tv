@@ -10,7 +10,7 @@ const operation = ref(TimeOperation.ADD);
 // Computed para calcular o resultado automaticamente
 const result = computed(() =>
   !time1.value || !time2.value
-    ? ""
+    ? "--"
     : calculateTime(time1.value, time2.value, operation.value)
 );
 </script>
