@@ -28,8 +28,20 @@ const result = computed(() =>
     <div class="flex flex-center col-grow">
       <q-card bordered class="q-pa-md" style="max-width: 650px; width: 90vw;">
         <q-card-section class="q-gutter-md">
-          <q-input v-model="time1" label="Hora 1 (HH:MM)" mask="##:##" filled />
-          <q-input v-model="time2" label="Hora 2 (HH:MM)" mask="##:##" filled />
+          <q-input
+            v-model="time1"
+            label="Hora 1 (HH:MM)"
+            mask="##:##"
+            outlined
+            color="secondary"
+          />
+          <q-input
+            v-model="time2"
+            label="Hora 2 (HH:MM)"
+            mask="##:##"
+            outlined
+            color="secondary"
+          />
 
           <q-btn-toggle
             v-model="operation"
