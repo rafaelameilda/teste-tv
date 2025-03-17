@@ -41,12 +41,12 @@ export default {
       currentSlide: 0,
       playlist: [
         { type: "video", url: "/videos/video 1.mp4" },
-        { type: "image", time: 5000, url: "/images/segtec.jpeg" },
-        { type: "image", time: 5000, url: "/images/imagem1.jpeg" },
-        { type: "image", time: 5000, url: "/images/imagem2.jpeg" },
-        { type: "image", time: 5000, url: "/images/imagem3.jpeg" },
-        { type: "image", time: 5000, url: "/images/hoje.jpeg" },
-        { type: "video", url: "/videos/hoje.mp4" },
+        // { type: "image", time: 5000, url: "/images/segtec.jpeg" },
+        // { type: "image", time: 5000, url: "/images/imagem1.jpeg" },
+        // { type: "image", time: 5000, url: "/images/imagem2.jpeg" },
+        // { type: "image", time: 5000, url: "/images/imagem3.jpeg" },
+        // { type: "image", time: 5000, url: "/images/hoje.jpeg" },
+        // { type: "video", url: "/videos/hoje.mp4" },
       ],
       slideTimeout: null,
       videoElement: null, // Variável para armazenar o vídeo atual
