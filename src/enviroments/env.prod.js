@@ -1,3 +1,3 @@
 export default {
-  baseURL: 'https://api.asasdonorte.com.br',
+  baseURL: 'https://api-tv.asasdonorte.com.br',
 };
